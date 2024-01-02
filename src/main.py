@@ -184,6 +184,132 @@ async def chat_command(
         )
 
 
+# /assist message: (customed)
+@tree.command(name="assist", description="Create a new assisting thread for conversation")
+@discord.app_commands.checks.has_permissions(send_messages=True)
+@discord.app_commands.checks.has_permissions(view_channel=True)
+@discord.app_commands.checks.bot_has_permissions(send_messages=True)
+@discord.app_commands.checks.bot_has_permissions(view_channel=True)
+@discord.app_commands.checks.bot_has_permissions(manage_threads=True)
+@app_commands.describe(message="The first prompt to start the assist with")
+@app_commands.describe(model="The model to use for the assist")
+@app_commands.describe(
+    temperature="Controls randomness. Higher values mean more randomness. Between 0 and 1"
+)
+@app_commands.describe(
+    max_tokens="How many tokens the model should output at max for each message."
+)
+async def assist_command(
+    int: discord.Interaction,
+    message: str,
+    model: AVAILABLE_MODELS = DEFAULT_MODEL,
+    temperature: Optional[float] = 1.0,
+    max_tokens: Optional[int] = 512,
+):
+    try:
+        # only support creating thread in text channel
+        if not isinstance(int.channel, discord.TextChannel):
+            return
+
+        # block servers not in allow list
+        if should_block(guild=int.guild):
+            return
+
+        user = int.user
+        logger.info(f"Assis command by {user} {message[:20]}")
+
+        # Check for valid temperature
+        if temperature is not None and (temperature < 0 or temperature > 1):
+            await int.response.send_message(
+                f"You supplied an invalid temperature: {temperature}. Temperature must be between 0 and 1.",
+                ephemeral=True,
+            )
+            return
+
+        # Check for valid max_tokens
+        if max_tokens is not None and (max_tokens < 1 or max_tokens > 4096):
+            await int.response.send_message(
+                f"You supplied an invalid max_tokens: {max_tokens}. Max tokens must be between 1 and 4096.",
+                ephemeral=True,
+            )
+            return
+
+        try:
+            # moderate the message
+            flagged_str, blocked_str = moderate_message(message=message, user=user)
+            await send_moderation_blocked_message(
+                guild=int.guild,
+                user=user,
+                blocked_str=blocked_str,
+                message=message,
+            )
+            if len(blocked_str) > 0:
+                # message was blocked
+                await int.response.send_message(
+                    f"Your prompt has been blocked by moderation.\n{message}",
+                    ephemeral=True,
+                )
+                return
+
+            embed = discord.Embed(
+                description=f"<@{user.id}> wants to chat! 🤖💬",
+                color=discord.Color.green(),
+            )
+            embed.add_field(name="model", value=model)
+            embed.add_field(name="temperature", value=temperature, inline=True)
+            embed.add_field(name="max_tokens", value=max_tokens, inline=True)
+            embed.add_field(name=user.name, value=message)
+
+            if len(flagged_str) > 0:
+                # message was flagged
+                embed.color = discord.Color.yellow()
+                embed.title = "⚠️ This prompt was flagged by moderation."
+
+            await int.response.send_message(embed=embed)
+            response = await int.original_response()
+
+            await send_moderation_flagged_message(
+                guild=int.guild,
+                user=user,
+                flagged_str=flagged_str,
+                message=message,
+                url=response.jump_url,
+            )
+        except Exception as e:
+            logger.exception(e)
+            await int.response.send_message(
+                f"Failed to start assist {str(e)}", ephemeral=True
+            )
+            return
+
+        # create the thread
+        thread = await response.create_thread(
+            name=f"{ACTIVATE_THREAD_PREFX} {user.name[:20]} - {message[:30]}",
+            slowmode_delay=1,
+            reason="gpt-bot",
+            auto_archive_duration=60,
+        )
+        thread_data[thread.id] = ThreadConfig(
+            model=model, max_tokens=max_tokens, temperature=temperature
+        )
+        async with thread.typing():
+            # fetch completion
+            messages = [Message(user=user.name, text=message)]
+            response_data = await generate_completion_response(
+                messages=messages, user=user, thread_config=thread_data[thread.id]
+            )
+            # send the result
+            await process_response(
+                user=user, thread=thread, response_data=response_data
+            )
+    except Exception as e:
+        logger.exception(e)
+        await int.response.send_message(
+            f"Failed to start chat {str(e)}", ephemeral=True
+        )
+
+
+
 # calls for each message
 @client.event
 async def on_message(message: DiscordMessage):
