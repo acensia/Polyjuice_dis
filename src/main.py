@@ -253,12 +253,12 @@ async def assist_command(
 
             embed = discord.Embed(
                 description=f"<@{user.id}> wants to chat! 🤖💬",
-                color=discord.Color.green(),
+                color=discord.Color.blue(),
             )
             embed.add_field(name="model", value=model)
             embed.add_field(name="temperature", value=temperature, inline=True)
             embed.add_field(name="max_tokens", value=max_tokens, inline=True)
-            embed.add_field(name=user.name, value=message)
+            # embed.add_field(name=user.name, value=message)
 
             if len(flagged_str) > 0:
                 # message was flagged
