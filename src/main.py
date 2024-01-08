@@ -295,7 +295,7 @@ async def polymorph_command(
         thread_data[thread.id] = ThreadConfig(
             model=model, max_tokens=max_tokens, temperature=temperature
         )
-        generate_morphing_inst(messages=message, user=user, thread_config=thread_data[thread.id])
+        await generate_morphing_inst(messages=message, user=user, thread_config=thread_data[thread.id])
         async with thread.typing():
             # fetch completion
             messages = [Message(user=user.name, text="Are you there?")]
