@@ -25,6 +25,7 @@ from src.utils import (
 )
 from src import completion
 from src.completion import generate_completion_response, process_response
+from src.completion import generate_morphing_inst
 from src.moderation import (
     moderate_message,
     send_moderation_blocked_message,
@@ -51,7 +52,7 @@ async def on_ready():
     for c in EXAMPLE_CONVOS:
         messages = []
         for m in c.messages:
-            if m.user == "Lenard":
+            if m.user == client.user.name:
                 messages.append(Message(user=client.user.name, text=m.text))
             else:
                 messages.append(m)
@@ -78,7 +79,7 @@ async def chat_command(
     int: discord.Interaction,
     message: str,
     model: AVAILABLE_MODELS = DEFAULT_MODEL,
-    temperature: Optional[float] = 0.2,
+    temperature: Optional[float] = 1.0,
     max_tokens: Optional[int] = 512,
 ):
     try:
@@ -184,22 +185,22 @@ async def chat_command(
         )
 
 
-# /assist message: (customed)
-@tree.command(name="assist", description="Create a new assisting thread for conversation")
+# /polymorph message: (customed)
+@tree.command(name="polymorph", description="Create a new Polymorphing thread for conversation")
 @discord.app_commands.checks.has_permissions(send_messages=True)
 @discord.app_commands.checks.has_permissions(view_channel=True)
 @discord.app_commands.checks.bot_has_permissions(send_messages=True)
 @discord.app_commands.checks.bot_has_permissions(view_channel=True)
 @discord.app_commands.checks.bot_has_permissions(manage_threads=True)
-@app_commands.describe(message="The first prompt to start the assist with")
-@app_commands.describe(model="The model to use for the assist")
+@app_commands.describe(message="The first prompt to start the Polymorph with")
+@app_commands.describe(model="The model to use for the Polymorph")
 @app_commands.describe(
     temperature="Controls randomness. Higher values mean more randomness. Between 0 and 1"
 )
 @app_commands.describe(
     max_tokens="How many tokens the model should output at max for each message."
 )
-async def assist_command(
+async def polymorph_command(
     int: discord.Interaction,
     message: str,
     model: AVAILABLE_MODELS = DEFAULT_MODEL,
@@ -216,7 +217,7 @@ async def assist_command(
             return
 
         user = int.user
-        logger.info(f"Assis command by {user} {message[:20]}")
+        logger.info(f"Polymorph command by {user} {message[:20]}")
 
         # Check for valid temperature
         if temperature is not None and (temperature < 0 or temperature > 1):
@@ -237,6 +238,7 @@ async def assist_command(
         try:
             # moderate the message
             flagged_str, blocked_str = moderate_message(message=message, user=user)
+            print(flagged_str, blocked_str)
             await send_moderation_blocked_message(
                 guild=int.guild,
                 user=user,
@@ -252,13 +254,14 @@ async def assist_command(
                 return
 
             embed = discord.Embed(
-                description=f"<@{user.id}> wants to chat! 🤖💬",
-                color=discord.Color.blue(),
+                description=f"<@{user.id}> wants you to polymorph! 🤖💬",
+                color=discord.Color.red(),
             )
             embed.add_field(name="model", value=model)
             embed.add_field(name="temperature", value=temperature, inline=True)
             embed.add_field(name="max_tokens", value=max_tokens, inline=True)
             # embed.add_field(name=user.name, value=message)
+
 
             if len(flagged_str) > 0:
                 # message was flagged
@@ -278,7 +281,7 @@ async def assist_command(
         except Exception as e:
             logger.exception(e)
             await int.response.send_message(
-                f"Failed to start assist {str(e)}", ephemeral=True
+                f"Failed to start Polymorph {str(e)}", ephemeral=True
             )
             return
 
@@ -292,9 +295,10 @@ async def assist_command(
         thread_data[thread.id] = ThreadConfig(
             model=model, max_tokens=max_tokens, temperature=temperature
         )
+        generate_morphing_inst(messages=message, user=user, thread_config=thread_data[thread.id])
         async with thread.typing():
             # fetch completion
-            messages = [Message(user=user.name, text=message)]
+            messages = [Message(user=user.name, text="Are you there?")]
             response_data = await generate_completion_response(
                 messages=messages, user=user, thread_config=thread_data[thread.id]
             )

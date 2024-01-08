@@ -41,6 +41,32 @@ class CompletionData:
 client = AsyncOpenAI()
 
 
+def generate_morphing_inst(
+        messages: Message, user:str, thread_config:ThreadConfig
+) :
+    try:
+        msg = f"You are prompt engineer to have gpt make responses better. \
+        Give me an instruction to prompt gpt to respond by mimicking {Message}'s \
+        personality. Only the instruction, without any explanation"
+
+        
+        res = client.chat.completions.create(
+            model=thread_config.model,
+            messages=msg,
+            temperature=thread_config.temperature,
+            top_p=1.0,
+            max_tokens=thread_config.max_tokens,
+            stop=["<|endoftext|>"],
+        )
+        BOT_INSTRUCTIONS += res
+        print(BOT_INSTRUCTIONS)
+
+    except:
+        pass
+        
+
+
+
 async def generate_completion_response(
     messages: List[Message], user: str, thread_config: ThreadConfig
 ) -> CompletionData:
