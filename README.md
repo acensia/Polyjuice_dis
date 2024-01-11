@@ -8,6 +8,11 @@
 
 Character-Cloning bot written in Python to mimic characters in harry potter.
 
+## Updates
+
+**2024.01.11**
+We update new command:"/polymorph". With the command, giving a name of the character you want, chatting thread is created, with gpt responsing as the character.
+
 <!-- Example Discord bot written in Python that uses the [chat completions API](https://platform.openai.com/docs/api-reference/chat/create) to have conversations with the `gpt-3.5-turbo` model, and the [moderations API](https://beta.openai.com/docs/api-reference/moderations) to filter the messages.
 
 This bot uses the [OpenAI Python Library](https://github.com/openai/openai-python) and [discord.py](https://discordpy.readthedocs.io/). -->
