@@ -254,7 +254,7 @@ async def polymorph_command(
                 return
 
             embed = discord.Embed(
-                description=f"<@{user.id}> wants you to polymorph! 🤖💬",
+                description=f"<@{user.id}> wants talk with {message}! 🤖💬",
                 color=discord.Color.red(),
             )
             embed.add_field(name="model", value=model)
