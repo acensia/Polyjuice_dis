@@ -248,7 +248,7 @@ async def polymorph_command(
             if len(blocked_str) > 0:
                 # message was blocked
                 await int.response.send_message(
-                    f"{message} said something very aggresive :(\n{message}",
+                    f"Your prompt has been blocked by moderation.\n{message}",
                     ephemeral=True,
                 )
                 return
