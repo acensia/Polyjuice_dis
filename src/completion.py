@@ -49,11 +49,12 @@ async def check_in_harry_potter(
         name: str, model:str
 )->bool:
     try:
-        msg = f"is {name} in Harry Potter? Only answer in yes or no"
+        # msg = f"Does {name} or similar name exist in Harry Potter? Only answer in yes or no"
+        msg = f"Does {name} exist in Harry Potter? Only answer in yes or no"
         rendered = [{"role":"user", "content":msg}]
         res = await client.chat.completions.create(
             model=model,
-            messagess=rendered,
+            messages=rendered,
             temperature=0.1,
             max_tokens=2,
             stop=["<|endoftext|>"],
