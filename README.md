@@ -19,6 +19,10 @@ We are relaxing the degree of moderation. We reduced the moderating values by a 
 **2024.01.22**
 MiiiRo - I corrected our my mistake: set all the moderating values as 1.0.
 
+We added the checker if the character user writes exists in Harry Potter,
+
+and updated thread's frontend.
+
 <!-- Example Discord bot written in Python that uses the [chat completions API](https://platform.openai.com/docs/api-reference/chat/create) to have conversations with the `gpt-3.5-turbo` model, and the [moderations API](https://beta.openai.com/docs/api-reference/moderations) to filter the messages.
 
 This bot uses the [OpenAI Python Library](https://github.com/openai/openai-python) and [discord.py](https://discordpy.readthedocs.io/). -->

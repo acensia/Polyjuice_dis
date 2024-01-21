@@ -25,7 +25,7 @@ from src.utils import (
 )
 from src import completion
 from src.completion import generate_completion_response, process_response
-from src.completion import generate_morphing_inst
+from src.completion import generate_morphing_inst, check_in_harry_potter
 from src.moderation import (
     moderate_message,
     send_moderation_blocked_message,
@@ -61,6 +61,8 @@ async def on_ready():
 
 
 # /chat message:
+# disabled
+"""
 @tree.command(name="chat", description="Create a new thread for conversation")
 @discord.app_commands.checks.has_permissions(send_messages=True)
 @discord.app_commands.checks.has_permissions(view_channel=True)
@@ -183,7 +185,7 @@ async def chat_command(
         await int.response.send_message(
             f"Failed to start chat {str(e)}", ephemeral=True
         )
-
+"""
 
 # /polymorph message: (customed)
 @tree.command(name="polymorph", description="Create a new Polymorphing thread for conversation")
@@ -227,6 +229,23 @@ async def polymorph_command(
             )
             return
 
+        # check if valid character in harry potter
+        # located here because of "int.response"->seems not to be interacted twice
+        try:
+            chk = await check_in_harry_potter(message, model)
+            if not chk:
+                await int.response.send_message(
+                    f"You supplied an invalid character: \"{message}\". Plz check your character's name.",
+                    ephemeral=True,
+                )
+                return
+        except Exception as e:
+            logger.exception(e)
+            await int.response.send_message(
+                f"Failed to start Polymorph {str(e)}", ephemeral=True
+            )
+            return
+
         # Check for valid max_tokens
         if max_tokens is not None and (max_tokens < 1 or max_tokens > 4096):
             await int.response.send_message(
@@ -254,7 +273,7 @@ async def polymorph_command(
                 return
 
             embed = discord.Embed(
-                description=f"<@{user.id}> wants talk with <@{message}>! 🤖💬",
+                description=f"<@{user.id}> wants talk with [{message}]! 🧙💬",
                 color=discord.Color.red(),
             )
             embed.add_field(name="model", value=model)
@@ -284,6 +303,7 @@ async def polymorph_command(
                 f"Failed to start Polymorph {str(e)}", ephemeral=True
             )
             return
+
 
         # create the thread
         thread = await response.create_thread(

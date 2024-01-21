@@ -20,8 +20,11 @@ from src.moderation import (
 
 MY_BOT_NAME = BOT_NAME
 MY_BOT_EXAMPLE_CONVOS = EXAMPLE_CONVOS
+
+#to change the value with async func
 class changed:
     BOT_INSTRUCTIONS_MODIFIED = BOT_INSTRUCTIONS
+    
 
 class CompletionResult(Enum):
     OK = 0
@@ -42,13 +45,38 @@ class CompletionData:
 client = AsyncOpenAI()
 
 
+async def check_in_harry_potter(
+        name: str, model:str
+)->bool:
+    try:
+        msg = f"is {name} in Harry Potter? Only answer in yes or no"
+        rendered = [{"role":"user", "content":msg}]
+        res = await client.chat.completions.create(
+            model=model,
+            messagess=rendered,
+            temperature=0.1,
+            max_tokens=2,
+            stop=["<|endoftext|>"],
+        )
+        ans = res.choices[0].message.content
+        print(ans)
+        return "Yes" in ans
+
+    except Exception as e:
+        logger.exception(e)
+        print("Unexpected error")
+        return False
+
+
 async def generate_morphing_inst(
         messages: str, user:str, thread_config:ThreadConfig
 )->CompletionData:
     try:
         msg = f"You are prompt engineer to have gpt make responses better. \
         Give me an instruction to prompt gpt to respond by mimicking {messages}'s \
-        characteristics, including personalities, experiences, speeches, and knowledges. Only the instruction sentence, without any explanation"
+        characteristics, including personalities, experiences, speeches, and knowledges. \
+        It includes how friendly with muggles, and how familiar with muggle techknowledges. \
+        Only the instruction sentence, without any explanation"
 
         rendered = [{"role" : "system", "content":msg}]
 
@@ -70,7 +98,10 @@ async def generate_morphing_inst(
     except Exception as e:
         print(e)
         print("Error occurs")
-        pass
+        logger.exception(e)
+        return CompletionData(
+            status=CompletionResult.OTHER_ERROR, reply_text=None, status_text=str(e)
+        )
         
 
 
