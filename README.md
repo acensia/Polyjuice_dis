@@ -16,8 +16,8 @@ We update new command:"/polymorph". With the command, giving a name of the chara
 **2024.01.15**
 We are relaxing the degree of moderation. We reduced the moderating values by a fifth.
 
-**2024.01.20**
-We checked how the moderation works. It seems to need modifying.
+**2024.01.22**
+MiiiRo - I corrected our my mistake: set all the moderating values as 1.0.
 
 <!-- Example Discord bot written in Python that uses the [chat completions API](https://platform.openai.com/docs/api-reference/chat/create) to have conversations with the `gpt-3.5-turbo` model, and the [moderations API](https://beta.openai.com/docs/api-reference/moderations) to filter the messages.
 
