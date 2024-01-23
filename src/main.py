@@ -233,7 +233,7 @@ async def polymorph_command(
         # located here because of "int.response"->seems not to be interacted twice
         try:
             chk = await check_in_harry_potter(message, model)
-            if not chk:
+            if "No" in chk:
                 await int.response.send_message(
                     f"You supplied an invalid character: \"{message}\". Plz check your character's name.",
                     ephemeral=True,
@@ -273,7 +273,7 @@ async def polymorph_command(
                 return
 
             embed = discord.Embed(
-                description=f"<@{user.id}> wants talk with [{message}]! 🧙💬",
+                description=f"<@{user.id}> wants talk with [{chk}]! 🧙💬",
                 color=discord.Color.red(),
             )
             embed.add_field(name="model", value=model)
@@ -315,7 +315,7 @@ async def polymorph_command(
         thread_data[thread.id] = ThreadConfig(
             model=model, max_tokens=max_tokens, temperature=temperature
         )
-        await generate_morphing_inst(messages=message, user=user, thread_config=thread_data[thread.id])
+        await generate_morphing_inst(messages=chk, user=user, thread_config=thread_data[thread.id])
         async with thread.typing():
             # fetch completion
             messages = [Message(user=user.name, text="Are you there?")]

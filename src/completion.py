@@ -50,18 +50,21 @@ async def check_in_harry_potter(
 )->bool:
     try:
         # msg = f"Does {name} or similar name exist in Harry Potter? Only answer in yes or no"
-        msg = f"Does {name} exist in Harry Potter? Only answer in yes or no"
-        rendered = [{"role":"user", "content":msg}]
+        inst = "User will tell you a name. If any character with that name exists in Harry Potter, repeat the name. \
+        If not the same, but similar name exists in Harry Potter, tell the right name of it. \
+        If any character with the name doesn't exist, just say No."
+        
+        rendered = [{"role":"system", "content":inst},{"role":"user", "content":name}]
         res = await client.chat.completions.create(
             model=model,
             messages=rendered,
             temperature=0.1,
-            max_tokens=2,
+            max_tokens=7,
             stop=["<|endoftext|>"],
         )
         ans = res.choices[0].message.content
         print(ans)
-        return "Yes" in ans
+        return ans
 
     except Exception as e:
         logger.exception(e)
@@ -77,8 +80,9 @@ async def generate_morphing_inst(
         Give me an instruction to prompt gpt to respond by mimicking {messages}'s \
         characteristics, including personalities, experiences, speeches, and knowledges. \
         It includes how friendly with muggles, and how familiar with muggle techknowledges. \
-        Only the instruction sentence, without any explanation"
-
+        Only the instruction sentence, without any explanation."
+        # To summarize, you should tell GPT to act exactly like {messages}. \
+        
         rendered = [{"role" : "system", "content":msg}]
 
         print("instruction generating starts")
