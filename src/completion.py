@@ -52,7 +52,7 @@ async def check_in_harry_potter(
         # msg = f"Does {name} or similar name exist in Harry Potter? Only answer in yes or no"
         inst = "User will tell you a name. If any character with that name exists in Harry Potter, repeat the name. \
         If not the same, but similar name exists in Harry Potter, tell the right name of it. \
-        If any character with the name doesn't exist, just say No."
+        If any character with the name doesn't exist, only say No."
         
         rendered = [{"role":"system", "content":inst},{"role":"user", "content":name}]
         res = await client.chat.completions.create(
