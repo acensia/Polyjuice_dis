@@ -49,6 +49,7 @@ async def on_ready():
     logger.info(f"We have logged in as {client.user}. Invite URL: {BOT_INVITE_URL}")
     completion.MY_BOT_NAME = client.user.name
     completion.MY_BOT_EXAMPLE_CONVOS = []
+    """
     for c in EXAMPLE_CONVOS:
         messages = []
         for m in c.messages:
@@ -57,6 +58,7 @@ async def on_ready():
             else:
                 messages.append(m)
         completion.MY_BOT_EXAMPLE_CONVOS.append(Conversation(messages=messages))
+    """
     await tree.sync()
 
 
